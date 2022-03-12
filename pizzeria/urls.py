@@ -2,10 +2,5 @@ from django.urls import include, path
 from rest_framework import routers
 from . import views
 
-router = routers.DefaultRouter()
-router.register(r'pizzas', views.PizzaViewSet)
-
-urlpatterns = [
-    path('', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
-]
+router_pizzas = routers.DefaultRouter()
+router_pizzas.register(r'pizzas', views.PizzaViewSet, basename='pizzas')

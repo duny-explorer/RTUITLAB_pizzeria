@@ -3,7 +3,15 @@ from rest_framework import serializers
 from .models import *
 
 
-class PizzaSerializer(serializers.HyperlinkedModelSerializer):
+class PizzaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pizza
-        fields = ('name', 'size', 'price', 'weight', 'ingredients', 'available')
+        fields = ('size', 'weight', 'price', 'available')
+
+
+class PizzaToppingSerializer(serializers.HyperlinkedModelSerializer):
+    pizzas = PizzaSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = PizzaTopping
+        fields = ('name', 'info', 'pizzas', 'slug')

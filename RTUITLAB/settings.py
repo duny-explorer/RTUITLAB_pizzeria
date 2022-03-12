@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'pizzeria'
+    'pizzeria',
+    'orders'
 ]
 
 MIDDLEWARE = [
@@ -76,10 +77,20 @@ WSGI_APPLICATION = 'RTUITLAB.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+"""
+        default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'pizzeriaexample',
+        'USER': 'dunyexplorer',
+        'PASSWORD': '12345678',
+        'HOST': 'db4free.net',
+        'PORT': '3306',
+"""
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': 'mydatabase'
     }
 }
 
