@@ -1,15 +1,24 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework_extensions.mixins import NestedViewSetMixin
 from .paginations import *
 from .serializers import *
 from .models import *
 
 
-class OrderViewSet(viewsets.ModelViewSet):
+class OrderItemViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+    queryset = OrderItem.objects.all()
+    serializer_class = ItemSerializer
+    model = Order
+
+
+class OrderViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     pagination_class = OrderPagination
+    model = Order
 
     def list(self, request):
         p = request.GET.get('page')

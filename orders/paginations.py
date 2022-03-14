@@ -1,7 +1,7 @@
 from rest_framework import pagination
 
 
-class PizzaPagination(pagination.PageNumberPagination):
+class OrderPagination(pagination.PageNumberPagination):
     page_size = 5
     page_size_query_param = 'size'
     max_page_size = 20

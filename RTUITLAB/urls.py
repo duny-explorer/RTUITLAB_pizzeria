@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
 
 from pizzeria.urls import router_pizzas
@@ -25,6 +26,8 @@ class DefaultsRouter(routers.DefaultRouter):
     def extend(self, router):
         self.registry.extend(router.registry)
 
+
+handler404 = lambda request, exception=None: JsonResponse({'error': '404: The resource was not found'}, status=404)
 
 router = DefaultsRouter()
 router.extend(router_orders)
