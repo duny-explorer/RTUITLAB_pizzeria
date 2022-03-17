@@ -1,4 +1,3 @@
-from django.db import models
 from pizzeria.models import *
 
 
@@ -16,14 +15,19 @@ class Order(models.Model):
     def __str__(self):
         return 'Order {}'.format(self.id)
 
-    def save(self):
+    def total(self):
+        return sum(item.get_cost() for item in self.items.all())
+
+    def pre_add(self):
         self.total_cost = sum(item.get_cost() for item in self.items.all())
-        super(Order, self).save()
+
+    def save(self,  *args, **kwargs):
+        super(Order, self).save(*args, **kwargs)
 
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
-    pizza = models.ForeignKey(Pizza, related_name='+', on_delete=models.DO_NOTHING)
+    pizza = models.ForeignKey(Product, related_name='+', on_delete=models.DO_NOTHING)
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
@@ -31,3 +35,6 @@ class OrderItem(models.Model):
 
     def get_cost(self):
         return self.pizza.price * self.quantity
+
+    def save(self, *args, **kwargs):
+        super(OrderItem, self).save(*args, **kwargs)

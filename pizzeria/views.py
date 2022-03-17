@@ -1,5 +1,6 @@
-from django.core.exceptions import FieldDoesNotExist
-from django.shortcuts import render
+from django.http import Http404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from .paginations import PizzaPagination
@@ -7,11 +8,39 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 from .serializers import *
 from .models import *
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class ProductViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     model = Product
+
+    def create(self, request, *args, **kwargs):
+        pizza = Pizza.objects.get(slug=self.get_parents_query_dict()['pizza_slug']).name
+
+        if not request.data:
+            return Response({"status": "400", "message": "Empty body"}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.data._mutable = True
+        request.data['pizza'] = pizza
+        request.data._mutable = False
+        return super(ProductViewSet, self).create(request, *args, **kwargs)
+
+    def get_object(self):
+        product = Pizza.objects.get(slug=self.get_parents_query_dict()['pizza_slug']).products.all()
+        pk = int(self.kwargs['pk'])
+
+        if len(product) < pk:
+            raise Http404
+
+        return product[pk - 1]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({'status': '404', 'message': "No content"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class PizzaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
@@ -21,7 +50,8 @@ class PizzaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     lookup_field = 'slug'
     model = Pizza
 
-    def list(self, request):
+    @method_decorator(cache_page(60))
+    def list(self, request, *args, **kwargs):
         p = request.GET.get('page')
 
         obj = self.queryset
@@ -34,3 +64,9 @@ class PizzaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         else:
             serializer = self.get_serializer(obj, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        if not request.data:
+            return Response({"status": "400", "message": "Empty body"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return super(PizzaViewSet, self).create(request, *args, **kwargs)

@@ -9,9 +9,9 @@ class Pizza(models.Model):
     def __str__(self):
         return self.name
 
-    def save(self):
+    def save(self, *args, **kwargs):
         self.slug = "_".join(self.name.lower().split())
-        super(Pizza, self).save()
+        super(Pizza, self).save(*args, **kwargs)
 
 
 class Product(models.Model):
@@ -31,7 +31,6 @@ class Product(models.Model):
     def __str__(self):
         return self.pizza.name + " " + self.size
 
-    def save(self):
+    def save(self, *args, **kwargs):
         self.pizza_slug = "_".join(self.pizza.name.lower().split())
-        super(Product, self).save()
-
+        super(Product, self).save(*args, **kwargs)

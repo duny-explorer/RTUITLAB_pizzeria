@@ -4,10 +4,14 @@ from .models import *
 
 
 class ItemSerializer(serializers.ModelSerializer):
+    #pizza = serializers.StringRelatedField(many=True)
 
     class Meta:
         model = OrderItem
-        fields = ('pizza', 'quantity')
+        fields = ('pizza', 'quantity', 'order')
+
+    def create(self, validated_data):
+        return OrderItem.objects.create(**validated_data)
 
 
 class OrderSerializer(serializers.HyperlinkedModelSerializer):
@@ -17,3 +21,6 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
         model = Order
         fields = ('first_name', 'last_name', 'email', 'address', 'created', 'updated', 'paid', 'comment', 'total_cost',
                   'items')
+
+    def create(self, validated_data):
+        return Order.objects.create(**validated_data)
