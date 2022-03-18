@@ -4,7 +4,7 @@ from .models import *
 
 
 class ItemSerializer(serializers.ModelSerializer):
-    #pizza = serializers.StringRelatedField(many=True)
+    pizza = serializers.CharField()
 
     class Meta:
         model = OrderItem

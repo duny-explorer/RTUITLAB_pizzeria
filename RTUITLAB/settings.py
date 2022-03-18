@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-=fzvc3!d%b3f97ni@upnvwgjvo!_4l6h@*m28#ej0fp$1x@xcx'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
+    'drf_spectacular',
     'pizzeria',
     'orders',
 ]
@@ -140,7 +141,8 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'RTUITLAB.errors.custom_exception_handler',
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ]
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 CACHES = {
@@ -151,4 +153,12 @@ CACHES = {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
     }
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Pizzeria API',
+    'DESCRIPTION': 'Do you want a pizzeria? I come.',
+    'VERSION': '1.0.0',
+    'CONTACT': {'name': 'duny_explorer', 'email': 'duny.explorer@yandex.ru',
+                "url": 'https://github.com/duny-explorer/RTUITLAB_pizzeria'}
 }

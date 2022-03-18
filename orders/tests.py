@@ -1,3 +1,7 @@
 from django.test import TestCase
+from .models import *
+from django.test.client import Client
 
-# Create your tests here.
+
+class OrderTestCase(TestCase):
+    pass

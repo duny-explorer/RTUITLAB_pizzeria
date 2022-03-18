@@ -16,31 +16,44 @@ class ProductViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     model = Product
+    http_method_names = ['get', 'post', 'head', 'options', 'patch', 'delete']
 
     def create(self, request, *args, **kwargs):
-        pizza = Pizza.objects.get(slug=self.get_parents_query_dict()['pizza_slug']).name
-
         if not request.data:
-            return Response({"status": "400", "message": "Empty body"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status_code": 400, "message": "Empty body"}, status=status.HTTP_400_BAD_REQUEST)
 
-        request.data._mutable = True
-        request.data['pizza'] = pizza
-        request.data._mutable = False
+        if 'pizza' in request.data:
+            pizza = Pizza.objects.get(slug=self.get_parents_query_dict()['pizza_slug']).name
+
+            request.data._mutable = True
+            request.data['pizza'] = pizza
+            request.data._mutable = False
         return super(ProductViewSet, self).create(request, *args, **kwargs)
 
     def get_object(self):
-        product = Pizza.objects.get(slug=self.get_parents_query_dict()['pizza_slug']).products.all()
-        pk = int(self.kwargs['pk'])
+        pizza = Pizza.objects.filter(slug=self.get_parents_query_dict()['pizza_slug'])
 
-        if len(product) < pk:
-            raise Http404
+        if pizza:
+            product = pizza[0].products.all()
+            pk = int(self.kwargs['pk'])
 
-        return product[pk - 1]
+            if len(product) < pk or not product:
+                raise Http404
+
+            return product[pk - 1]
+
+        raise Http404
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return Response({'status': '404', 'message': "No content"}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'status_code': 404, 'message': "No content"}, status=status.HTTP_204_NO_CONTENT)
+
+    def partial_update(self, request, *args, **kwargs):
+        if 'pizza' in request.data:
+            request.data._mutable = True
+            del request.data['pizza']
+            request.data._mutable = False
 
 
 class PizzaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
@@ -49,6 +62,7 @@ class PizzaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     pagination_class = PizzaPagination
     lookup_field = 'slug'
     model = Pizza
+    http_method_names = ['get', 'post', 'head', 'options', 'patch', 'delete']
 
     @method_decorator(cache_page(60))
     def list(self, request, *args, **kwargs):
@@ -67,6 +81,6 @@ class PizzaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         if not request.data:
-            return Response({"status": "400", "message": "Empty body"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status_code": 400, "message": "Empty body"}, status=status.HTTP_400_BAD_REQUEST)
 
         return super(PizzaViewSet, self).create(request, *args, **kwargs)

@@ -18,9 +18,6 @@ class Order(models.Model):
     def total(self):
         return sum(item.get_cost() for item in self.items.all())
 
-    def pre_add(self):
-        self.total_cost = sum(item.get_cost() for item in self.items.all())
-
     def save(self,  *args, **kwargs):
         super(Order, self).save(*args, **kwargs)
 

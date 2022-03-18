@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 
 
@@ -10,7 +12,8 @@ class Pizza(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        self.slug = "_".join(self.name.lower().split())
+        n = re.sub(r'[^\w\s]', '', self.name)
+        self.slug = "_".join(n.lower().split())
         super(Pizza, self).save(*args, **kwargs)
 
 
