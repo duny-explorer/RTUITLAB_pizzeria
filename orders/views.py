@@ -33,15 +33,19 @@ class OrderItemViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         if 'pizza' in request.data and request.data['pizza']:
             pizza = request.data['pizza'].split()
 
-            if len(pizza) == 2:
-                request.data['pizza'] = Product.objects.get(pizza__name=pizza[0], size=pizza[1]).id
+            if len(pizza) != 1:
+                pizza = Product.objects.filter(pizza__name=" ".join(pizza[:-1]), size=pizza[1])
 
-                if not request.data['pizza']:
+                if not pizza:
                     return Response({"status_code": 400, "pizza": ["Incorrect name of pizza"]},
                                     status=status.HTTP_400_BAD_REQUEST)
+
+                request.data['pizza'] = pizza[0].id
+                logger.error(pizza[0])
             else:
                 return Response({"status_code": 400, "pizza": ["Incorrect name of pizza"]},
                                 status=status.HTTP_400_BAD_REQUEST)
+
         request.data._mutable = False
         return super(OrderItemViewSet, self).create(request, *args, **kwargs)
 
@@ -75,6 +79,9 @@ class OrderItemViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
             del request.data['pizza']
             request.data._mutable = False
 
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
+
 
 class OrderViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -91,12 +98,12 @@ class OrderViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         p = request.GET.get('page')
 
         if p is not None:
-            page = self.paginate_queryset(self.filter_queryset(self.get_queryset()))
+            page = self.paginate_queryset(self.filter_queryset(Order.objects.all()))
             serializer = self.get_serializer(page, many=True, context={"request": request})
 
             return self.get_paginated_response(serializer.data)
         else:
-            serializer = self.get_serializer(self.filter_queryset(self.get_queryset()),
+            serializer = self.get_serializer(self.filter_queryset(Order.objects.all()),
                                              many=True, context={"request": request})
             return Response(serializer.data, status=status.HTTP_200_OK)
 

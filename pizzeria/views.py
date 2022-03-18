@@ -22,12 +22,12 @@ class ProductViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         if not request.data:
             return Response({"status_code": 400, "message": "Empty body"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if 'pizza' in request.data:
-            pizza = Pizza.objects.get(slug=self.get_parents_query_dict()['pizza_slug']).name
+        pizza = Pizza.objects.get(slug=self.get_parents_query_dict()['pizza_slug'])
 
-            request.data._mutable = True
-            request.data['pizza'] = pizza
-            request.data._mutable = False
+        request.data._mutable = True
+        request.data['pizza'] = pizza
+        request.data._mutable = False
+
         return super(ProductViewSet, self).create(request, *args, **kwargs)
 
     def get_object(self):
@@ -46,7 +46,7 @@ class ProductViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        self.perform_destroy(instance)
+        instance.delete()
         return Response({'status_code': 404, 'message': "No content"}, status=status.HTTP_204_NO_CONTENT)
 
     def partial_update(self, request, *args, **kwargs):
@@ -54,6 +54,9 @@ class ProductViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
             request.data._mutable = True
             del request.data['pizza']
             request.data._mutable = False
+
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
 
 
 class PizzaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
@@ -68,7 +71,7 @@ class PizzaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         p = request.GET.get('page')
 
-        obj = self.queryset
+        obj = Pizza.objects.all()
 
         if p is not None:
             page = self.paginate_queryset(obj)
